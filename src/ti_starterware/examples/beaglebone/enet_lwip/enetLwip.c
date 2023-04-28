@@ -340,6 +340,9 @@ int main(void)
     AintcCPSWIntrSetUp();
     DelayTimerSetup();
 
+    /* Disable the Watchdog timer */
+    WatchdogTimerDisable(SOC_WDT_1_REGS);
+
     ConsoleUtilsPrintf("\n\rStarterWare Ethernet Application. Access the"
              " embedded web page using http://<ip address assigned>/index.html"
              " via a web browser. \n\r\n\r");
