@@ -119,16 +119,16 @@ Entry:
          MOV   sp,r0                           @ write the stack pointer
          SUB   r0,r0, #IRQ_STACK_SIZE          @ give stack space
 @
+@ Set up the Stack for USer/System mode
+@
+         MSR   cpsr_c, #MODE_SYS|I_F_BIT       @ change to system mode
+         MOV   sp,r0                           @ write the stack pointer
+@
 @ Set up the Stack for SVC mode
 @        
          MSR   cpsr_c, #MODE_SVC|I_F_BIT       @ change to SVC mode
          MOV   sp,r0                           @ write the stack pointer
          SUB   r0,r0, #SVC_STACK_SIZE          @ give stack space
-@
-@ Set up the Stack for USer/System mode
-@      
-         MSR   cpsr_c, #MODE_SYS|I_F_BIT       @ change to system mode
-         MOV   sp,r0                           @ write the stack pointer
 
 @ Invalidate and Enable Branch Prediction  
          MOV     r0, #0

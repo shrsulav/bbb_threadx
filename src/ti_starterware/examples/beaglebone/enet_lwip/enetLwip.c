@@ -88,6 +88,8 @@
 #include "delay.h"
 #include "mmu.h"
 #include "cache.h"
+#include "tx_api.h"
+#include "tx_port.h"
 
 /******************************************************************************
 **                      INTERNAL MACRO DEFINITIONS
@@ -347,6 +349,8 @@ int main(void)
              " embedded web page using http://<ip address assigned>/index.html"
              " via a web browser. \n\r\n\r");
    
+    tx_kernel_enter();
+
     ConsoleUtilsPrintf("Acquiring IP Address for Port 1... \n\r" );
 
 #if STATIC_IP_ADDRESS_PORT1
