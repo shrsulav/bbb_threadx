@@ -9,6 +9,8 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "hw_intc.h"
+#include "soc_AM335x.h"
 
 /**************************************************************************/
 /**************************************************************************/
@@ -38,7 +40,23 @@ SYS_STACK_SIZE  =       1024                    // System stack size
     .global     _end
     .global     _sp
     .global     _stack_bottom
+    .global fnRAMVectors
 
+    .equ ADDR_SIR_IRQ, SOC_AINTC_REGS + INTC_SIR_IRQ
+    .equ ADDR_SIR_FIQ, SOC_AINTC_REGS + INTC_SIR_FIQ
+    .equ ADDR_CONTROL, SOC_AINTC_REGS + INTC_CONTROL
+    .equ ADDR_THRESHOLD, SOC_AINTC_REGS + INTC_THRESHOLD
+    .equ ADDR_IRQ_PRIORITY, SOC_AINTC_REGS + INTC_IRQ_PRIORITY
+
+    .equ MASK_ACTIVE_IRQ, INTC_SIR_IRQ_ACTIVEIRQ
+    .equ MASK_ACTIVE_FIQ, INTC_SIR_FIQ_ACTIVEFIQ
+    .equ NEWIRQAGR, INTC_CONTROL_NEWIRQAGR
+    .equ NEWFIQAGR, INTC_CONTROL_NEWFIQAGR
+
+    .equ MASK_SVC_NUM, 0xFF000000
+    .equ MODE_SYS, 0x1F
+    .equ MODE_IRQ, 0x12
+    .equ I_BIT, 0x80
 
 /* Define the 16-bit Thumb mode veneer for _tx_initialize_low_level for
    applications calling this function from to 16-bit Thumb mode.  */
@@ -198,6 +216,38 @@ __tx_irq_processing_return:
        small code sequences where lr is saved before enabling interrupts and
        restored after interrupts are again disabled.  */
 
+        LDR      r0, =ADDR_THRESHOLD      @ Get the IRQ Threshold
+        LDR      r1, [r0, #0]
+        STMFD    r13!, {r1}               @ Save the threshold value
+
+        LDR      r2, =ADDR_IRQ_PRIORITY   @ Get the active IRQ priority
+        LDR      r3, [r2, #0]
+        STR      r3, [r0, #0]             @ Set the priority as threshold
+
+        LDR      r1, =ADDR_SIR_IRQ        @ Get the Active IRQ
+        LDR      r2, [r1]
+        AND      r2, r2, #MASK_ACTIVE_IRQ @ Mask the Active IRQ number
+
+        MOV      r0, #NEWIRQAGR           @ To enable new IRQ Generation
+        LDR      r1, =ADDR_CONTROL
+
+        CMP      r3, #0                   @ Check if non-maskable priority 0
+        STRNE    r0, [r1]                 @ if > 0 priority, acknowledge INTC
+        DSB                               @ Make sure acknowledgement is completed
+
+        @
+        @ Enable IRQ and switch to system mode. But IRQ shall be enabled
+        @ only if priority level is > 0. Note that priority 0 is non maskable.
+        @ Interrupt Service Routines will execute in System Mode.
+        @
+        MRS      r14, cpsr                @ Read cpsr
+        ORR      r14, r14, #MODE_SYS
+        BICNE    r14, r14, #I_BIT         @ Enable IRQ if priority > 0
+        MSR      cpsr, r14
+
+
+        STMFD    r13!, {r14}              @ Save lr_usr
+
     /* Interrupt nesting is allowed after calling _tx_thread_irq_nesting_start
        from IRQ mode with interrupts disabled.  This routine switches to the
        system mode and returns with IRQ interrupts enabled.
@@ -212,7 +262,13 @@ __tx_irq_processing_return:
        a real system, some kind of status indication would have to be checked
        before the timer interrupt handler could be called.  */
 
-    BL     _tx_timer_interrupt                  // Timer interrupt handler
+    @ BL     _tx_timer_interrupt                  // Timer interrupt handler
+
+    LDR      r0, =fnRAMVectors        @ Load the base of the vector table
+    ADD      r14, pc, #0              @ Save return address in LR
+    LDR      pc, [r0, r2, lsl #2]     @ Jump to the ISR
+
+    LDMFD    r13!, {r14}              @ Restore lr_usr
 
 
     /* If interrupt nesting was started earlier, the end of interrupt nesting
@@ -221,6 +277,19 @@ __tx_irq_processing_return:
 #ifdef TX_ENABLE_IRQ_NESTING
     BL      _tx_thread_irq_nesting_end
 #endif
+
+    @
+    @ Disable IRQ and change back to IRQ mode
+    @
+    CPSID    i, #MODE_IRQ
+    LDR      r0, =ADDR_THRESHOLD      @ Get the IRQ Threshold
+    LDR      r1, [r0, #0]
+    CMP      r1, #0                   @ If priority 0
+    MOVEQ    r2, #NEWIRQAGR           @ Enable new IRQ Generation
+    LDREQ    r1, =ADDR_CONTROL
+    STREQ    r2, [r1]
+    LDMFD    r13!, {r1}
+    STR      r1, [r0, #0]             @ Restore the threshold value
 
     /* Jump to context restore to restore system context.  */
     B       _tx_thread_context_restore

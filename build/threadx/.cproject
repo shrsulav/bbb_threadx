@@ -29,6 +29,7 @@
 							<tool id="com.ti.ccstudio.buildDefinitions.TMS470_GNU_9.0.library.compilerDebug.1859533148" name="GNU Compiler" superClass="com.ti.ccstudio.buildDefinitions.TMS470_GNU_9.0.library.compilerDebug">
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.ti.ccstudio.buildDefinitions.TMS470_GNU_9.0.compilerID.DEFINE.203109562" name="Define symbols (-D)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_GNU_9.0.compilerID.DEFINE" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="am3359"/>
+									<listOptionValue builtIn="false" value="TX_INCLUDE_USER_DEFINE_FILE"/>
 								</option>
 								<option id="com.ti.ccstudio.buildDefinitions.TMS470_GNU_9.0.compilerID.MCPU.344070377" name="Target CPU (-mcpu)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_GNU_9.0.compilerID.MCPU" useByScannerDiscovery="false" value="cortex-a8" valueType="string"/>
 								<option id="com.ti.ccstudio.buildDefinitions.TMS470_GNU_9.0.compilerID.MTUNE.45811936" name="Tune code for the given processor (-mtune)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_GNU_9.0.compilerID.MTUNE" useByScannerDiscovery="false" value="cortex-a8" valueType="string"/>
@@ -42,6 +43,7 @@
 									<listOptionValue builtIn="false" value="${CG_TOOL_INCLUDE_PATH}"/>
 									<listOptionValue builtIn="false" value="${SRC_ROOT}\threadx\common\inc"/>
 									<listOptionValue builtIn="false" value="${SRC_ROOT}\threadx\ports\cortex_a8\gnu\inc"/>
+									<listOptionValue builtIn="false" value="${SRC_ROOT}\ti_starterware\include\hw"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.ti.ccstudio.buildDefinitions.TMS470_GNU_9.0.compilerID.ASM_SPECIFIC_FLAGS.815260637" name="Miscellaneous assembly source specific flags" superClass="com.ti.ccstudio.buildDefinitions.TMS470_GNU_9.0.compilerID.ASM_SPECIFIC_FLAGS" useByScannerDiscovery="false" valueType="stringList">
 									<listOptionValue builtIn="false" value="-x assembler-with-cpp"/>
