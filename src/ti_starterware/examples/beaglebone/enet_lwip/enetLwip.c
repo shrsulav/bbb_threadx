@@ -135,7 +135,7 @@ static CPSW_CONF_IF cpswConfig;
 *******************************************************************************/
 static void CPSWCore0RxIsr(void);
 static void CPSWCore0TxIsr(void);
-static void AintcCPSWIntrSetUp(void);
+// static void AintcCPSWIntrSetUp(void);
 static void IpAddrDisplay(unsigned int ipAddr);
 static void MMUConfigAndEnable(void);
 
@@ -339,8 +339,8 @@ int main(void)
     EVMMACAddrGet(0, lwipIfPort1.macArray); 
     EVMMACAddrGet(1, lwipIfPort2.macArray); 
 
-    AintcCPSWIntrSetUp();
-    DelayTimerSetup();
+    // AintcCPSWIntrSetUp();
+    // DelayTimerSetup();
 
     /* Disable the Watchdog timer */
     WatchdogTimerDisable(SOC_WDT_1_REGS);
@@ -460,13 +460,16 @@ static void IpAddrDisplay(unsigned int ipAddr)
 /*
 ** Set up the ARM Interrupt Controller for generating timer interrupt
 */
-static void AintcCPSWIntrSetUp(void)
+void AintcSetUp(void)
 {
     /* Enable IRQ for ARM (in CPSR)*/
     IntMasterIRQEnable();
 
     IntAINTCInit();
-    
+}
+
+static void CPSWIntrSetup(void)
+{
     /* Register the Receive ISR for Core 0 */
     IntRegister(SYS_INT_3PGSWRXINT0, CPSWCore0RxIsr);
   
@@ -481,5 +484,4 @@ static void AintcCPSWIntrSetUp(void)
     IntSystemEnable(SYS_INT_3PGSWTXINT0);
     IntSystemEnable(SYS_INT_3PGSWRXINT0);
 }
-
 /***************************** End Of File ***********************************/

@@ -302,5 +302,10 @@
 #define TX_BYTE_POOL_DELAY_VALUE              3
 */
 
+#define TX_PORT_SPECIFIC_PRE_SCHEDULER_INITIALIZATION tx_prescheduler_init();
+
+/* SysTick period in milliseconds */
+#define TX_SYSTICK_PERIOD_MS   10u
+
 #endif
 

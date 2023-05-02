@@ -98,4 +98,25 @@ void tx_application_define(void *first_unused_memory)
 
 }
 
+void tx_systick_handler_test(void)
+{
+    ConsoleUtilsPrintf("\r\nTimer is working\r\n");
+}
+
+void _tx_timer_interrupt(void);
+void tx_systick_init(void)
+{
+    TimerTickConfigure(_tx_timer_interrupt);
+    TimerTickPeriodSet(TX_SYSTICK_PERIOD_MS);
+    TimerTickEnable();
+}
+
+void AintcSetUp(void);
+void tx_prescheduler_init(void)
+{
+    AintcSetUp();
+    DelayTimerSetup();
+    tx_systick_init();
+}
+
 

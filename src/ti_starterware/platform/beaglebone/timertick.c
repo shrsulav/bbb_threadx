@@ -41,25 +41,96 @@
 
 
 #include "systick.h"
+#include "soc_AM335x.h"
+#include "beaglebone.h"
+#include "interrupt.h"
+#include "dmtimer.h"
+
+/* The Input clock is selected as 24MHz. So for 1ms set the count to 0x5DC0.
+ *If the input clock is changed to different source this value has to be updated
+ *accordingly.
+*/
+#define TIMER_1MS_COUNT         (0x5DC0u)
+#define TIMER_OVERFLOW          (0xFFFFFFFFu)
+
+#define TMR_INTRNUM             SYS_INT_TINT4
+#define TMR_MDLREG              SOC_DMTIMER_4_REGS
+#define TMR_CLKCNFG             DMTimer4ModuleClkConfig
+
+// function pointer for ISR to be executed on Timer Interrupt
+void (*pfnTimerTickISR)(void);
+
+void TimerTickISR(void)
+{
+    /* Disable the DMTimer interrupts */
+    DMTimerIntDisable(TMR_MDLREG, DMTIMER_INT_OVF_EN_FLAG);
+
+    /* Clear the status of the interrupt flags */
+    DMTimerIntStatusClear(TMR_MDLREG, DMTIMER_INT_OVF_IT_FLAG);
+
+    pfnTimerTickISR();
+
+    /* Enable the DMTimer interrupts */
+    DMTimerIntEnable(TMR_MDLREG, DMTIMER_INT_OVF_EN_FLAG);
+}
 
 void TimerTickConfigure(void (*pfnHandler)(void))
 {    
-    
+    pfnTimerTickISR = pfnHandler;
+
+    /* This function will enable clocks for the DMTimer instance */
+    TMR_CLKCNFG();
+
+    /* Registering DMTimerIsr */
+    IntRegister(TMR_INTRNUM, TimerTickISR);
+
+    /* Set the priority */
+    IntPrioritySet(TMR_INTRNUM, 0, AINTC_HOSTINT_ROUTE_IRQ);
+
+    /* Enable the system interrupt */
+    IntSystemEnable(TMR_INTRNUM);
+
+    DMTimerCounterSet(TMR_MDLREG, 0);
+
+    /* Configure the DMTimer for Auto-reload and compare mode */
+    DMTimerModeConfigure(TMR_MDLREG, DMTIMER_AUTORLD_NOCMP_ENABLE);
 }
 
 void TimerTickPeriodSet(unsigned int ulTime)
 {
-	
+    unsigned int countVal = TIMER_OVERFLOW - (ulTime * TIMER_1MS_COUNT);
+
+    /* Load the counter with the initial count value */
+    DMTimerCounterSet(TMR_MDLREG, countVal);
+
+    /* Load the load register with the reload count value */
+    DMTimerReloadSet(TMR_MDLREG, countVal);
 }
 
 void TimerTickEnable(void)
 {	
+    if(pfnTimerTickISR == NULL)
+    {
+        // Do not enable the Timer Interrupt if Timer ISR function pointer is NULL
+        return;
+    }
+    /* Enable the DMTimer interrupts */
+    DMTimerIntEnable(TMR_MDLREG, DMTIMER_INT_OVF_EN_FLAG);
 
+    /* Start the DMTimer */
+    DMTimerEnable(TMR_MDLREG);
 }
 
 void TimerTickDisable(void)
 {
-	
+    /* Disable the DMTimer interrupts */
+    DMTimerIntDisable(TMR_MDLREG, DMTIMER_INT_OVF_EN_FLAG);
+
+    /* Clear the status of the interrupt flags */
+    DMTimerIntStatusClear(TMR_MDLREG, DMTIMER_INT_OVF_IT_FLAG);
+
+    /* Start the DMTimer */
+    DMTimerDisable(TMR_MDLREG);
 }
 
 
