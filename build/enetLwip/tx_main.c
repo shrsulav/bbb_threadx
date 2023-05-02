@@ -6,6 +6,9 @@
  */
 
 #include "consoleUtils.h"
+#include "systick.h"
+#include "delay.h"
+#include "tx_user.h"
 #include "tx_api.h"
 #include "tx_port.h"
 
@@ -31,6 +34,8 @@ void my_thread_entry(ULONG thread_input)
         thread_counter++;
 
         ConsoleUtilsPrintf("\r\nThread 1 Count: %d", thread_counter);
+
+        tx_thread_sleep(200); // sleep for 2 seconds
 
         /* Release the semaphore. */
         status = tx_semaphore_put(&semaphore_1);
@@ -58,6 +63,8 @@ void my_thread_entry_2(ULONG thread_input)
         thread_counter++;
 
         ConsoleUtilsPrintf("\r\nThread 2 Count: %d", thread_counter);
+
+        tx_thread_sleep(200); // sleep for 2 seconds
 
         /* Release the semaphore. */
         status = tx_semaphore_put(&semaphore_0);
