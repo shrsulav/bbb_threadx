@@ -1,0 +1,16 @@
+eclipse.preferences.version=1
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Debug.1505522866/TI_STARTERWARE_HOME/delimiter=;
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Debug.1505522866/TI_STARTERWARE_HOME/operation=append
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Debug.1505522866/TI_STARTERWARE_HOME/value=${WORKSPACE_LOC}\\..\\src\\ti_starterware
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Debug.1505522866/append=true
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Debug.1505522866/appendContributed=true
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Debug.842061/TI_STARTERWARE_HOME/delimiter=;
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Debug.842061/TI_STARTERWARE_HOME/operation=append
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Debug.842061/TI_STARTERWARE_HOME/value=${WORKSPACE_LOC}\\..\\src\\ti_starterware
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Debug.842061/append=true
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Debug.842061/appendContributed=true
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Release.1867437031/TI_STARTERWARE_HOME/delimiter=;
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Release.1867437031/TI_STARTERWARE_HOME/operation=append
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Release.1867437031/TI_STARTERWARE_HOME/value=${WORKSPACE_LOC}\\..\\src\\ti_starterware
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Release.1867437031/append=true
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Release.1867437031/appendContributed=true
