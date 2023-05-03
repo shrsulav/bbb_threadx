@@ -313,10 +313,6 @@ static unsigned int EnetLWIPSwitchConfiguration(unsigned int switchConfig)
 */
 int main(void)
 {
-    unsigned int ipAddr;
-    unsigned int initFlg = 1;
-    LWIP_IF lwipIfPort1, lwipIfPort2;
-
     MMUConfigAndEnable();
 
 #ifdef LWIP_CACHE_ENABLED
@@ -332,98 +328,12 @@ int main(void)
     /* Select the console type based on compile time check */
     ConsoleUtilsSetType(CONSOLE_UART);
 
-    /* Chip configuration RGMII selection */
-    EVMPortMIIModeSelect();
-
-    /* Get the MAC address */
-    EVMMACAddrGet(0, lwipIfPort1.macArray); 
-    EVMMACAddrGet(1, lwipIfPort2.macArray); 
-
-    // AintcCPSWIntrSetUp();
-    // DelayTimerSetup();
-
     /* Disable the Watchdog timer */
     WatchdogTimerDisable(SOC_WDT_1_REGS);
 
-    ConsoleUtilsPrintf("\n\rStarterWare Ethernet Application. Access the"
-             " embedded web page using http://<ip address assigned>/index.html"
-             " via a web browser. \n\r\n\r");
-   
+    ConsoleUtilsPrintf("\r\nStarting ThreadX kernel.");
+
     tx_kernel_enter();
-
-    ConsoleUtilsPrintf("Acquiring IP Address for Port 1... \n\r" );
-
-#if STATIC_IP_ADDRESS_PORT1
-
-    lwipIfPort1.instNum = 0;
-    lwipIfPort1.slvPortNum = 1; 
-    lwipIfPort1.ipAddr = STATIC_IP_ADDRESS_PORT1; 
-    lwipIfPort1.netMask = 0; 
-    lwipIfPort1.gwAddr = 0; 
-    lwipIfPort1.ipMode = IPADDR_USE_STATIC; 
-
-    ipAddr = lwIPInit(&lwipIfPort1);
-
-#else
-
-    lwipIfPort1.instNum = 0;
-    lwipIfPort1.slvPortNum = 1; 
-    lwipIfPort1.ipAddr = 0; 
-    lwipIfPort1.netMask = 0; 
-    lwipIfPort1.gwAddr = 0; 
-    lwipIfPort1.ipMode = IPADDR_USE_DHCP; 
-
-    ipAddr = lwIPInit(&lwipIfPort1);
-
-#endif
-    if(ipAddr)
-    {
-        ConsoleUtilsPrintf("\n\r\n\rPort 1 IP Address Assigned: ");
-        IpAddrDisplay(ipAddr);
-    }
-    else
-    {
-        ConsoleUtilsPrintf("\n\r\n\rPort 1 IP Address Acquisition Failed.");
-    }
-
-    /* Initialize the sample httpd server. */
-    httpd_init();
-   
-    cpswConfig.phy_param = &cpswPhyParam;
-
-    /* Loop forever.  For Switch Condigraton and interrupt handlers. */
-    while(1)
-    {
-        unsigned int switchConfig = 0;
-        unsigned char switchConfigInputHelp[] = "):  ";
-
-        if(initFlg)
-        {
-            ConsoleUtilsPrintf("\n\r\n\r === CPSW Configurations === ");
-            ConsoleUtilsPrintf("\n\r\n\r === Available PHY Configurations ===");
-            ConsoleUtilsPrintf("\n\r\n\r1 - Configure Phy of a Port ");
-            ConsoleUtilsPrintf("\n\r\n\r2 - Exit ");
-            initFlg = 0;
-        }
-
-        if (!initFlg)
-        {
-            ConsoleUtilsPrintf("\n\r\n\r Select Switch Configuration (1 to %d",
-                               CONFIG_SWITCH_EXIT_CMD);
-
-            switchConfig = UserValueInfoGet(1, CONFIG_SWITCH_EXIT_CMD, 0, FALSE,
-                                            switchConfigInputHelp);
-
-            ConsoleUtilsPrintf("\n\r\n\rSwitch Configuration selected: %d\r\n",
-                               switchConfig);
-
-            if(EnetLWIPSwitchConfiguration(switchConfig))
-                initFlg = 1;
-        }
-
-        if(switchConfig == CONFIG_SWITCH_EXIT_CMD)
-            break;
-    }
 
     /* Loop forever.  All the work is done in interrupt handlers. */
     while(1)
@@ -484,4 +394,65 @@ static void CPSWIntrSetup(void)
     IntSystemEnable(SYS_INT_3PGSWTXINT0);
     IntSystemEnable(SYS_INT_3PGSWRXINT0);
 }
+
+void start_lwip(void)
+{
+    unsigned int ipAddr;
+    unsigned int initFlg = 1;
+    LWIP_IF lwipIfPort1, lwipIfPort2;
+
+    CPSWIntrSetup();
+
+    /* Chip configuration RGMII selection */
+    EVMPortMIIModeSelect();
+
+    /* Get the MAC address */
+    EVMMACAddrGet(0, lwipIfPort1.macArray);
+    EVMMACAddrGet(1, lwipIfPort2.macArray);
+
+    ConsoleUtilsPrintf("\n\rStarterWare Ethernet Application. Access the"
+                 " embedded web page using http://<ip address assigned>/index.html"
+                 " via a web browser. \n\r\n\r");
+
+    ConsoleUtilsPrintf("Acquiring IP Address for Port 1... \n\r" );
+
+    #if STATIC_IP_ADDRESS_PORT1
+
+        lwipIfPort1.instNum = 0;
+        lwipIfPort1.slvPortNum = 1;
+        lwipIfPort1.ipAddr = STATIC_IP_ADDRESS_PORT1;
+        lwipIfPort1.netMask = 0;
+        lwipIfPort1.gwAddr = 0;
+        lwipIfPort1.ipMode = IPADDR_USE_STATIC;
+
+        ipAddr = lwIPInit(&lwipIfPort1);
+
+    #else
+
+        lwipIfPort1.instNum = 0;
+        lwipIfPort1.slvPortNum = 1;
+        lwipIfPort1.ipAddr = 0;
+        lwipIfPort1.netMask = 0;
+        lwipIfPort1.gwAddr = 0;
+        lwipIfPort1.ipMode = IPADDR_USE_DHCP;
+
+        ipAddr = lwIPInit(&lwipIfPort1);
+
+     #endif
+        if(ipAddr)
+        {
+            ConsoleUtilsPrintf("\n\r\n\rPort 1 IP Address Assigned: ");
+            IpAddrDisplay(ipAddr);
+        }
+        else
+        {
+            ConsoleUtilsPrintf("\n\r\n\rPort 1 IP Address Acquisition Failed.");
+        }
+
+        /* Initialize the sample httpd server. */
+        httpd_init();
+
+        cpswConfig.phy_param = &cpswPhyParam;
+}
+
 /***************************** End Of File ***********************************/

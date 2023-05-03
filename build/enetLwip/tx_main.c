@@ -14,7 +14,7 @@
 
 TX_BYTE_POOL byte_pool_0;
 TX_SEMAPHORE semaphore_0, semaphore_1;
-TX_THREAD my_thread, my_thread_2;
+TX_THREAD my_thread, my_thread_2, lwip_thread;
 
 void my_thread_entry(ULONG thread_input)
 {
@@ -74,6 +74,15 @@ void my_thread_entry_2(ULONG thread_input)
     }
 }
 
+void network_thread_entry(void)
+{
+    ConsoleUtilsPrintf("\n\rNetwork Thread Entry\n\r");
+
+    void start_lwip(void);
+
+    start_lwip();
+}
+
 void tx_application_define(void *first_unused_memory)
 {
     CHAR *pointer;
@@ -95,6 +104,14 @@ void tx_application_define(void *first_unused_memory)
     /* Create my_thread! */
     tx_thread_create(&my_thread_2, "My Thread 2",
                      my_thread_entry_2, 0x1234, pointer, 1024,
+                     3, 3, TX_NO_TIME_SLICE, TX_AUTO_START);
+
+    /* Allocate the stack for lwip thread. */
+    tx_byte_allocate(&byte_pool_0, &pointer, 4096, TX_NO_WAIT);
+
+    /* Create my_thread! */
+    tx_thread_create(&lwip_thread, "lwIP Thread",
+                     network_thread_entry, 0x1234, pointer, 4096,
                      3, 3, TX_NO_TIME_SLICE, TX_AUTO_START);
 
     /* Create the semaphore. */
